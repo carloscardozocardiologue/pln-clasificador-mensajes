@@ -6,6 +6,8 @@ Aplicación web para comparar en tiempo real dos modelos de PLN (TF-IDF y BETO) 
 
 Actividad académica: Unidad 6 — Máster IA en Salud, Universidad Europea de Madrid.
 
+**Producción:** https://pln-clasificador.up.railway.app/
+
 ## Stack
 
 - **Backend:** FastAPI + Uvicorn (Python 3.11)
