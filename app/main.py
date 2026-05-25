@@ -242,3 +242,9 @@ def borrar_todos(db: Session = Depends(get_db)):
 @app.get("/health")
 def health():
     return {"status": "ok", "beto_ready": classifier._beto_ready}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)
