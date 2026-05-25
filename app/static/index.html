@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clasificador de Mensajes Clínicos</title>
+  <link rel="stylesheet" href="/static/style.css?v=11" />
+</head>
+<body>
+
+  <!-- CABECERA -->
+  <header class="header">
+    <div class="header-inner">
+      <img src="/static/logo_ue.png" alt="Universidad Europea Madrid" class="logo" />
+      <div class="header-text">
+        <h1>Clasificador de Mensajes Clínicos</h1>
+        <p class="header-sub">TF-IDF vs BETO · Máster IA en Salud · UE Madrid</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVEGACIÓN POR PESTAÑAS -->
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="asistente">
+      <span class="tab-icon">💬</span> Asistente de Mensajes Clínicos
+    </button>
+    <button class="tab-btn" data-tab="estadisticas">
+      <span class="tab-icon">📊</span> Estadísticas
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PESTAÑA 1 — ASISTENTE                                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="tab-asistente" class="tab-content active">
+
+    <div class="card input-card">
+      <h2>Introduce el mensaje del paciente</h2>
+      <div class="textarea-wrap">
+        <textarea
+          id="mensaje-texto"
+          rows="4"
+          placeholder="Escribe aquí el mensaje del paciente… o usa el micrófono para dictarlo."
+        ></textarea>
+        <button id="btn-voz" class="btn-mic" title="Activar dictado por voz">
+          🎤
+        </button>
+      </div>
+      <div id="voz-estado" class="voz-estado hidden">🔴 Escuchando… habla con calma, las pausas no cortan la grabación.</div>
+      <div class="input-actions">
+        <button id="btn-clasificar" class="btn-primary">Clasificar</button>
+        <button id="btn-parar-voz" class="btn-parar hidden">⏹ Parar grabación</button>
+        <button id="btn-limpiar" class="btn-secondary">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="resultados" class="hidden">
+
+      <div class="mensaje-clasificado">
+        <span class="label-chip">Mensaje analizado:</span>
+        <span id="texto-mostrado" class="texto-mostrado"></span>
+      </div>
+
+      <div class="modelos-grid">
+
+        <!-- TF-IDF -->
+        <div class="modelo-card" id="card-tfidf">
+          <div class="modelo-header">
+            <span class="modelo-tag">TF-IDF + LogReg</span>
+          </div>
+          <div id="badge-tfidf" class="prioridad-badge">—</div>
+          <div id="conf-tfidf" class="confianza-texto"></div>
+          <div id="prob-tfidf" class="barras-prob"></div>
+          <div id="keywords-tfidf" class="keywords-section"></div>
+          <div id="cercano-tfidf" class="cercano-section"></div>
+        </div>
+
+        <!-- BETO -->
+        <div class="modelo-card" id="card-beto">
+          <div class="modelo-header">
+            <span class="modelo-tag">BETO (BERT español)</span>
+            <span id="beto-estado-chip" class="beto-chip hidden">⏳ Cargando…</span>
+          </div>
+          <div id="badge-beto" class="prioridad-badge">—</div>
+          <div id="conf-beto" class="confianza-texto"></div>
+          <div id="prob-beto" class="barras-prob"></div>
+          <div id="keywords-beto" class="keywords-section"></div>
+          <div id="cercano-beto" class="cercano-section"></div>
+        </div>
+
+      </div><!-- /modelos-grid -->
+
+      <!-- VALORACIÓN DEL MÉDICO -->
+      <div class="card opinion-card">
+        <h3>Valoración del médico</h3>
+        <div class="opinion-grid">
+          <div class="opinion-field">
+            <label for="opinion-select">Prioridad real:</label>
+            <div class="select-wrap">
+              <select id="opinion-select">
+                <option value="">— Seleccionar —</option>
+                <option value="leve">🟢 Leve</option>
+                <option value="moderada">🟡 Moderada</option>
+                <option value="grave">🔴 Grave / Urgente</option>
+              </select>
+            </div>
+          </div>
+          <div class="opinion-field notas-field">
+            <label for="notas-input">Notas (opcional):</label>
+            <input type="text" id="notas-input" placeholder="Comentario del médico…" />
+          </div>
+          <button id="btn-guardar" class="btn-primary" disabled>Guardar valoración</button>
+        </div>
+        <div id="guardado-ok" class="guardado-ok hidden">✅ Valoración guardada</div>
+      </div>
+
+    </div><!-- /resultados -->
+
+  </div><!-- /tab-asistente -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PESTAÑA 2 — ESTADÍSTICAS                                   -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div id="tab-estadisticas" class="tab-content hidden">
+
+    <!-- TARJETAS RESUMEN -->
+    <div class="stats-summary">
+      <div class="stat-card">
+        <span id="stat-clasificados" class="stat-num">0</span>
+        <span class="stat-lbl">Mensajes clasificados</span>
+      </div>
+      <div class="stat-card">
+        <span id="stat-valorados" class="stat-num">0</span>
+        <span class="stat-lbl">Valorados por médico</span>
+      </div>
+      <div class="stat-card tfidf-card">
+        <span id="stat-acc-tfidf" class="stat-num">—</span>
+        <span class="stat-lbl">Precisión TF-IDF</span>
+      </div>
+      <div class="stat-card beto-card">
+        <span id="stat-acc-beto" class="stat-num">—</span>
+        <span class="stat-lbl">Precisión BETO</span>
+      </div>
+    </div>
+
+    <!-- GRÁFICAS -->
+    <div class="charts-row">
+      <div class="chart-box">
+        <h3>Precisión global por modelo</h3>
+        <canvas id="chart-global"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Precisión por clase (médico como referencia)</h3>
+        <canvas id="chart-clases"></canvas>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card tabla-card">
+      <div class="tabla-header">
+        <h3>Registro de mensajes</h3>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-refrescar" class="btn-secondary btn-sm">↻ Refrescar</button>
+          <a href="/api/mensajes/csv" download class="btn-secondary btn-sm" style="text-decoration:none;">⬇ Descargar CSV</a>
+        </div>
+      </div>
+      <div class="tabla-scroll">
+        <table id="tabla-mensajes">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mensaje</th>
+              <th>TF-IDF</th>
+              <th>BETO</th>
+              <th>Médico</th>
+              <th>TF-IDF ✓</th>
+              <th>BETO ✓</th>
+              <th>Fecha</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body">
+            <tr><td colspan="11" class="tabla-vacia">Sin datos aún</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /tab-estadisticas -->
+
+  <!-- Modal detalle / edición mensaje -->
+  <div id="modal-detalle" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3 id="modal-titulo">Detalle del mensaje</h3>
+
+      <div class="modal-fila">
+        <!-- Mensaje -->
+        <div class="modal-campo">
+          <span class="campo-lbl">Mensaje completo</span>
+          <span class="campo-val msg-completo" id="modal-texto"></span>
+        </div>
+
+        <!-- Predicciones modelos (solo lectura) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="modal-campo">
+            <span class="campo-lbl">TF-IDF</span>
+            <span class="campo-val" id="modal-tfidf"></span>
+          </div>
+          <div class="modal-campo">
+            <span class="campo-lbl">BETO</span>
+            <span class="campo-val" id="modal-beto"></span>
+          </div>
+          <div class="modal-campo">
+            <span class="campo-lbl">Fecha</span>
+            <span class="campo-val" id="modal-fecha"></span>
+          </div>
+        </div>
+
+        <!-- Valoración médico — VISTA -->
+        <div id="modal-vista-medico" class="modal-campo">
+          <span class="campo-lbl">Valoración médico</span>
+          <span class="campo-val" id="modal-medico"></span>
+        </div>
+        <div class="modal-campo" id="modal-notas-wrap">
+          <span class="campo-lbl">Notas</span>
+          <span class="campo-val" id="modal-notas"></span>
+        </div>
+
+        <!-- Valoración médico — EDICIÓN (oculto por defecto) -->
+        <div id="modal-edit-fields" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="modal-campo">
+            <span class="campo-lbl">Prioridad real</span>
+            <select id="modal-edit-opinion" style="padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.9rem;">
+              <option value="">— Seleccionar —</option>
+              <option value="leve">🟢 Leve</option>
+              <option value="moderada">🟡 Moderada</option>
+              <option value="grave">🔴 Grave / Urgente</option>
+            </select>
+          </div>
+          <div class="modal-campo">
+            <span class="campo-lbl">Notas</span>
+            <input id="modal-edit-notas" type="text" placeholder="Comentario del médico…"
+              style="padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.9rem;width:100%;" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="modal-cerrar" class="btn-secondary">Cerrar</button>
+        <button id="modal-guardar" class="btn-primary hidden">Guardar cambios</button>
+      </div>
+      <div id="modal-guardado-ok" class="guardado-ok hidden" style="text-align:right;margin-top:8px;">✅ Guardado</div>
+    </div>
+  </div>
+
+  <footer class="aviso-legal">
+    ⚠️ <strong>Actividad académica — Unidad 6, Máster IA en Salud, Universidad Europea de Madrid.</strong>
+    Esta herramienta ha sido desarrollada con fines exclusivamente educativos.
+    <strong>No es un dispositivo médico y no debe utilizarse para diagnóstico clínico.</strong>
+    Cualquier decisión asistencial debe tomarse siempre por un profesional sanitario cualificado.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="/static/app.js?v=11"></script>
+</body>
+</html>
