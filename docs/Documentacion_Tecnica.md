@@ -3,6 +3,9 @@
 Máster Universitario en Inteligencia Artificial en Ciencias de la Salud  
 Universidad Europea de Madrid · Mayo 2026
 
+**Aplicación en producción:** https://pln-clasificador.up.railway.app/  
+**Repositorio GitHub:** https://github.com/carloscardozocardiologue/pln-clasificador-mensajes
+
 ---
 
 ## 1. Descripción general

@@ -55,7 +55,17 @@ uvicorn app.main:app --reload --port 8000
 
 ## Estado (mayo 2026)
 
-Primera versión funcional. Pendiente: despliegue en Railway con la URL de DB real.
+Aplicación en producción y validación clínica activa.
+
+- URL producción: https://pln-clasificador.up.railway.app/
+- Repositorio: https://github.com/carloscardozocardiologue/pln-clasificador-mensajes
+- Railway: dos servicios — MySQL plugin + FastAPI (Python 3.11 fijado en `.python-version`)
+- El médico está clasificando mensajes reales y anotando su valoración para generar métricas de validación
+- Python 3.11 es obligatorio en Railway: los wheels de `tokenizers` no están precompilados para 3.12/3.13
+- `nixpacks.toml` es el que realmente controla el comando de arranque en Railway (Procfile es fallback)
+- El puerto que Railway asigna en `$PORT` es 8080; uvicorn lo lee correctamente con `--port $PORT`
+- Cache de archivos estáticos: los links en index.html llevan `?v=N` — incrementar N al actualizar CSS/JS
+- Funcionalidades implementadas: voz (Web Speech API, continua), similitud coseno (TF-IDF y BETO), keywords TF-IDF, exportar CSV, editar/borrar mensajes, estadísticas por clase con Chart.js
 
 ## Reglas heredadas del global
 
