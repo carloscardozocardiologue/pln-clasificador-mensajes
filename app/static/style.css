@@ -56,6 +56,12 @@ body {
   color: var(--gray-400);
   margin-top: 2px;
 }
+.header-autor {
+  font-size: .78rem;
+  color: var(--gray-600);
+  margin-top: 3px;
+  font-weight: 500;
+}
 
 /* ─── TABS ──────────────────────────────────────────────────────────────── */
 .tabs-nav {
